@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 using System;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 /*
  *TargetManager Object controls all targets created.
@@ -30,6 +32,7 @@ public class TargetManager : MonoBehaviour
     [SerializeField] private List<float> targetAmplitudes;
     [SerializeField] private int numTargets;
 
+    private Stopwatch stopwatch;
     private Vector3 goal;
     private List<Vector3> distractors;
     private List<Vector3> points;
@@ -42,9 +45,14 @@ public class TargetManager : MonoBehaviour
 
     private GameManager gameManager;
     private StudyBehavior studyBehavior;
+    //private CSVManager csvManager;
 
-    public int repetitions = 5;
+    public int sizeIndex = 0;
+    public int ampIndex = 0;
+    public int ewIndex = 0;
+    [SerializeField] public int repetitions;
     public int repCounter = 0;
+    public int misclicks = 0;
 
     private void Awake()
     {
@@ -52,20 +60,86 @@ public class TargetManager : MonoBehaviour
         screenCentre = new Vector2(Screen.width / 2, Screen.height / 2);
         gameManager = GameObject.FindObjectOfType<GameManager>();
         studyBehavior = GameObject.FindObjectOfType<StudyBehavior>();
+        stopwatch = new Stopwatch();
+    }
+
+    private void TargetManagerLogData(long timer)
+    {
+        string[] data =
+        {
+            studyBehavior.ParticipantID.ToString(),
+            studyBehavior.StudySettings.cursorType.ToString(),
+            studyBehavior.StudySettings.targetAmplitudes[ampIndex].ToString(),
+            studyBehavior.StudySettings.targetSizes[sizeIndex].ToString(),
+            studyBehavior.StudySettings.EWToW_Ratio[ewIndex].ToString(),
+            timer.ToString(),
+            misclicks.ToString()
+        };
+        CSVManager.AppendToCSV(data);
+
+
     }
 
     //referenced from GameManager to create the center target.
     public void initialize()
     {
-        SpawnStartTarget();
+
+        stopwatch.Stop();
+        long timeElapsed = stopwatch.ElapsedMilliseconds;
+        UnityEngine.Debug.Log("MT: " + timeElapsed);
+        TargetManagerLogData(timeElapsed);
+        
+
+        bool gameEnded = false;
+
+
+        //variable control:
+        UnityEngine.Debug.Log("Rep " + repCounter + ", amp: " + studyBehavior.StudySettings.targetAmplitudes[ampIndex] + ", size: " + studyBehavior.StudySettings.targetSizes[sizeIndex] + ", EWtoW: " + studyBehavior.StudySettings.EWToW_Ratio[ewIndex]);
+        if(repCounter >= repetitions)
+        {
+            repCounter = 0;
+            ampIndex++;
+            if(ampIndex >= studyBehavior.StudySettings.targetAmplitudes.Count)
+            {
+                UnityEngine.Debug.Log("ampIndex reset, incrementing sizeIndex.");
+                ampIndex = 0;
+                sizeIndex++;
+                if(sizeIndex >= studyBehavior.StudySettings.targetSizes.Count)
+                {
+                    UnityEngine.Debug.Log("sizeIndex reset, incrementing EWIndex.");
+                    sizeIndex = 0;
+                    ewIndex++;
+                    if(ewIndex >= studyBehavior.StudySettings.EWToW_Ratio.Count)
+                    {
+                        UnityEngine.Debug.Log("ewIndex reset");
+                        UnityEngine.Debug.Log("Study complete.");
+                        gameEnded = true;
+                    }
+                }
+            }
+        }
+        
+
+        if (!gameEnded)
+        {
+            SpawnStartTarget();
+        }
+        else
+        {
+            gameManager.endGame();
+        }
+
     }
 
 
     //referenced from the centerTarget click event to start the game.
     public void startGame()
     {
+        misclicks = 0;
+        stopwatch.Reset();
+        stopwatch.Start();
         SpawnTargets();
-        Debug.Log("Center of screen: " + ScreenCentreInWorld);
+        UnityEngine.Debug.Log("Center of screen: " + ScreenCentreInWorld);
     }
 
 
@@ -91,14 +165,14 @@ public class TargetManager : MonoBehaviour
     private void SpawnTargets()
     {
         goal = GenerateGoalTarget();
-        distractors = GenerateDistractorTargets(goal, 3);
+        distractors = GenerateDistractorTargets(goal, studyBehavior.StudySettings.EWToW_Ratio[ewIndex]);
         points = GenerateRandomPoints();
 
         List<float> randomSizes = GenerateRandomSizes();
         int randomIndex = UnityEngine.Random.Range(0, points.Count);
 
         //find goal size.
-        float goalTargetSize = studyBehavior.StudySettings.targetSizes[repCounter];
+        float goalTargetSize = studyBehavior.StudySettings.targetSizes[sizeIndex];
         GameObject goalTargetObject = Instantiate(target, goal, Quaternion.identity, transform);
         goalTargetObject.transform.localScale = Vector3.one * goalTargetSize;
         goalTargetObject.name = "Goal";
@@ -137,17 +211,10 @@ public class TargetManager : MonoBehaviour
         foreach(GameObject targetToDelete in targetsToDelete)
         {
             Destroy(targetToDelete);
-            Debug.Log("All targets destroyed...");
+            
         }
-
-        if(repCounter < repetitions)
-        {
-            initialize();
-        }
-        else
-        {
-            gameManager.endGame();
-        }
+        UnityEngine.Debug.Log("All targets destroyed...");
+        initialize();
         //if rep < studyBehavior.repetitions then intialize study again
         //else show canvas displaying thank you screen
 
@@ -170,7 +237,7 @@ public class TargetManager : MonoBehaviour
                 float randomX = UnityEngine.Random.Range(0, Screen.width);
                 float randomY = UnityEngine.Random.Range(0, Screen.height);
                 float z = 10f;
-                Debug.Log(randomX + ", " + randomY);
+               
                 Vector3 randomScreenPoint = new(randomX, randomY, z);
                 randomWorldPoint = mainCamera.ScreenToWorldPoint(randomScreenPoint);
 
@@ -197,7 +264,7 @@ public class TargetManager : MonoBehaviour
     Vector3 GenerateGoalTarget()
     {
 
-        float amplitude = studyBehavior.StudySettings.targetAmplitudes[repCounter];//studyBehavior.StudySettings.targetAmplitudes[0];
+        float amplitude = studyBehavior.StudySettings.targetAmplitudes[ampIndex];//studyBehavior.StudySettings.targetAmplitudes[0];
         Vector3 direction = UnityEngine.Random.insideUnitCircle.normalized;
         Vector3 goalTargetPosition = ScreenCentreInWorld + direction * amplitude;
         goalTargetPosition.z = 10f;

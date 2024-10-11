@@ -33,6 +33,8 @@ public class StudyBehavior : MonoBehaviour
     public TrialConditions CurrentTrial => blockSequence[currentTrialIndex];
     public StudySettings StudySettings => studySettings;
 
+    private CSVManager CSVManager;
+
     public int ParticipantID
     {
         get => participantID;
@@ -62,6 +64,7 @@ public class StudyBehavior : MonoBehaviour
 
     private void Start()
     {
+        CSVManager = FindObjectOfType<CSVManager>();
         LogHeader();
         CreateBlock();
     }
@@ -107,7 +110,7 @@ public class StudyBehavior : MonoBehaviour
 
     private void LogHeader()
     {
-        //CSVManager.AppendToCSV(header);
+        CSVManager.AppendToCSV(header);
     }
 
     private void LogData()
@@ -122,7 +125,7 @@ public class StudyBehavior : MonoBehaviour
             timer.ToString(),
             misClick.ToString()
         };
-        //CSVManager.AppendToCSV(data);
+        CSVManager.AppendToCSV(data);
         timer = 0f;
         misClick = 0;
     }

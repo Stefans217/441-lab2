@@ -8,7 +8,7 @@ using UnityEngine.Serialization;
 public class BubbleCursor : MonoBehaviour
 {
     public float baseRadius = 0.5f;
-    public float maxRadius = 2f;
+    public float maxRadius = 3f;
     public float radius;
     public bool bubbleCursorActive;
 
@@ -111,8 +111,6 @@ public class BubbleCursor : MonoBehaviour
     private void ResetBubbleRadius()
     {
         radius = baseRadius;
-
-
         bubbleVisual.localScale = Vector3.one * radius * 2;
     }
 

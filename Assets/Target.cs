@@ -49,7 +49,7 @@ public class Target : MonoBehaviour
 
     public void OnSelect()
     {
-
+        if (!isGoalTarget) targetManager.misclicks++;
         
         if (isCenterTarget)
         {

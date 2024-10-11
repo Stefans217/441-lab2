@@ -11,6 +11,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] public Canvas studyCanvas;
     [SerializeField] public Canvas endCanvas;
     private BubbleCursor bubbleCursor;
+    private AreaCursor areaCursor;
     public TargetManager targetManager;
     private StudyBehavior studyBehavior;
     private int participantID;
@@ -19,14 +20,17 @@ public class GameManager : MonoBehaviour
     {
         bubbleCursor = FindObjectOfType<BubbleCursor>();
         inputField = GameObject.Find("InputField (TMP)").GetComponent<TMP_InputField>();
+
+        areaCursor = FindObjectOfType<AreaCursor>();
         
+
         GameObject targetSpawner = GameObject.Find("TargetSpawner");
         targetManager = targetSpawner.GetComponent<TargetManager>();
         
         studyBehavior = FindObjectOfType<StudyBehavior>();
         Debug.Log("Amplitude: " + studyBehavior.StudySettings.targetAmplitudes[0]);
 
-        //CSVManager.SetFilePath(studyBehavior.StudySettings.cursorType.ToString());
+        CSVManager.SetFilePath(studyBehavior.StudySettings.cursorType.ToString());
         DontDestroyOnLoad(this);
     }
 
@@ -61,9 +65,21 @@ public class GameManager : MonoBehaviour
     {
         if(inputField.text == string.Empty) return;
         participantID = int.Parse(inputField.text);
-        //studyBehavior.ParticipantID = participantID;
+        studyBehavior.ParticipantID = participantID;
         studyCanvas.gameObject.SetActive(false);
-        bubbleCursor.gameObject.SetActive(true);
+
+        if(studyBehavior.StudySettings.cursorType == CursorType.PointCursor)
+        {
+            bubbleCursor.gameObject.SetActive(false);
+            areaCursor.gameObject.SetActive(true);
+        }
+        else
+        {
+            bubbleCursor.gameObject.SetActive(true);
+            areaCursor.gameObject.SetActive(false);
+        }
+
+
         targetManager.initialize();
         Debug.Log("Study Started, Canvas hidden.");
     }
