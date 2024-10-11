@@ -18,20 +18,12 @@ public class Target : MonoBehaviour
         sprite = GetComponent<SpriteRenderer>();
         targetManager = FindObjectOfType<TargetManager>();
     }
-    void Update()
-    {
-        
-    }
 
     public void SetColor(Color color)
     {
         sprite.color = color;
     }
 
-    public void OnHighlight()
-    {
-
-    }
 
     public void OnHoverEnter()
     {
@@ -41,9 +33,10 @@ public class Target : MonoBehaviour
 
     public void OnHoverExit()
     {
-        //if(onSelect)return;
-        if(isCenterTarget)sprite.color = Color.red;
-        else if(isGoalTarget) sprite.color = Color.red;
+        if(onSelect)return;
+        if (isCenterTarget) sprite.color = Color.red;
+        else if (isGoalTarget) sprite.color = Color.red;
+        else if (isDistractorTarget) sprite.color = Color.gray;
         else sprite.color = Color.white;
     }
 

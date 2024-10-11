@@ -25,9 +25,7 @@ public class TargetManager : MonoBehaviour
 {
     [SerializeField] public GameObject target;
     [SerializeField] public Target centerTarget;
-    
-    //[SerializeField] public Target outsideTarget;
-    //[SerializeField] public Target distractorTarget;
+
     [SerializeField] private List<float> targetSizes;
     [SerializeField] private List<float> targetAmplitudes;
     [SerializeField] private int numTargets;
@@ -45,7 +43,7 @@ public class TargetManager : MonoBehaviour
 
     private GameManager gameManager;
     private StudyBehavior studyBehavior;
-    //private CSVManager csvManager;
+
 
     public int sizeIndex = 0;
     public int ampIndex = 0;
@@ -189,6 +187,8 @@ public class TargetManager : MonoBehaviour
             distractorObject.name = "distractor " + i;
             distractorObject.tag = "Target";
             distractorObject.GetComponent<SpriteRenderer>().color = Color.gray;
+            Target distractorTarget = distractorObject.GetComponent<Target>();
+            distractorTarget.isDistractorTarget = true;
         }
 
         for (int i = 0; i < numTargets; i++)
@@ -280,10 +280,10 @@ public class TargetManager : MonoBehaviour
 
         Vector3[] offsets = new Vector3[]
         {
-            new Vector3(distanceFromTarget, distanceFromTarget, 10f),
-            new Vector3(-distanceFromTarget, distanceFromTarget, 10f),
-            new Vector3(distanceFromTarget, -distanceFromTarget, 10f),
-            new Vector3(-distanceFromTarget, -distanceFromTarget, 10f)
+            new Vector3(distanceFromTarget, distanceFromTarget, 11f),
+            new Vector3(-distanceFromTarget, distanceFromTarget, 11f),
+            new Vector3(distanceFromTarget, -distanceFromTarget, 11f),
+            new Vector3(-distanceFromTarget, -distanceFromTarget, 11f)
         };
 
         foreach (var offset in offsets)

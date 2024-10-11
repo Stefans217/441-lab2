@@ -1,42 +1,42 @@
 using System;
 using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.Serialization;
-using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
+
+
     [SerializeField] private TMP_InputField inputField;
     [SerializeField] public Canvas studyCanvas;
     [SerializeField] public Canvas endCanvas;
+
     private BubbleCursor bubbleCursor;
     private AreaCursor areaCursor;
     public TargetManager targetManager;
     private StudyBehavior studyBehavior;
+
     private int participantID;
     
+
     private void Awake()
     {
-        bubbleCursor = FindObjectOfType<BubbleCursor>();
-        inputField = GameObject.Find("InputField (TMP)").GetComponent<TMP_InputField>();
-
-        areaCursor = FindObjectOfType<AreaCursor>();
-        
-
         GameObject targetSpawner = GameObject.Find("TargetSpawner");
         targetManager = targetSpawner.GetComponent<TargetManager>();
-        
-        studyBehavior = FindObjectOfType<StudyBehavior>();
-        Debug.Log("Amplitude: " + studyBehavior.StudySettings.targetAmplitudes[0]);
 
+        studyBehavior = FindObjectOfType<StudyBehavior>();
+
+        bubbleCursor = FindObjectOfType<BubbleCursor>();
+        areaCursor = FindObjectOfType<AreaCursor>();
+
+        inputField = GameObject.Find("InputField (TMP)").GetComponent<TMP_InputField>();
         CSVManager.SetFilePath(studyBehavior.StudySettings.cursorType.ToString());
+
         DontDestroyOnLoad(this);
     }
 
     public void Start()
     {
-
+        //determines cursor type and sets the start screen to a point cursor.
         SetCursor(studyBehavior.StudySettings.cursorType);
         bubbleCursor.gameObject.SetActive(false);
     }
@@ -53,21 +53,26 @@ public class GameManager : MonoBehaviour
 
     public void endGame()
     {
-        //print end game message here
+        //prints the end game message.
         endCanvas.gameObject.SetActive(true);
     }
 
 
     //Start Study is called on GUI Start Study button click.
-    //It needs to hide the GUI, and show the center button
+    //It hides the GUI and shows the center button
     //that must be clicked.
     public void StartStudy()
     {
+        //if participant ID was not entered then do nothing.
         if(inputField.text == string.Empty) return;
+
         participantID = int.Parse(inputField.text);
         studyBehavior.ParticipantID = participantID;
+
+        //hide the canvas (GUI)
         studyCanvas.gameObject.SetActive(false);
 
+        //set cursor type.
         if(studyBehavior.StudySettings.cursorType == CursorType.PointCursor)
         {
             bubbleCursor.gameObject.SetActive(false);
@@ -79,7 +84,7 @@ public class GameManager : MonoBehaviour
             areaCursor.gameObject.SetActive(false);
         }
 
-
+        //start the target manager script
         targetManager.initialize();
         Debug.Log("Study Started, Canvas hidden.");
     }

@@ -34,31 +34,4 @@ public class CSVManager : MonoBehaviour
 
         Debug.Log($"Data successfully appended to {filePath}");
     }
-
-    // Method to read data from a CSV file
-    public List<string[]> ReadFromCSV(string path)
-    {
-        List<string[]> data = new List<string[]>();
-
-        if (File.Exists(path))
-        {
-            using (StreamReader sr = new StreamReader(path))
-            {
-                string line;
-                while ((line = sr.ReadLine()) != null)
-                {
-                    string[] values = line.Split(',');
-                    data.Add(values);
-                }
-            }
-
-            Debug.Log($"Data successfully read from {path}");
-        }
-        else
-        {
-            Debug.LogError($"File not found: {path}");
-        }
-
-        return data;
-    }
 }
